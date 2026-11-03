@@ -1,7 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+}
+
+// Load signing properties safely from local.properties (git-ignored)
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -22,17 +32,27 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("C:/Users/vinod/keystore/release.keystore")
-            storePassword = "Krishna@963"
-            keyAlias = "vinod963"
-            keyPassword = "Krishna@963"
+            val keystorePath = localProperties.getProperty("KEYSTORE_PATH") ?: System.getenv("KEYSTORE_PATH")
+            val storePass = localProperties.getProperty("KEYSTORE_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")
+            val aliasName = localProperties.getProperty("KEY_ALIAS") ?: System.getenv("KEY_ALIAS")
+            val keyPass = localProperties.getProperty("KEY_PASSWORD") ?: System.getenv("KEY_PASSWORD")
+
+            if (!keystorePath.isNullOrEmpty() && !storePass.isNullOrEmpty()) {
+                storeFile = file(keystorePath)
+                storePassword = storePass
+                keyAlias = aliasName
+                keyPassword = keyPass
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            val releaseConfig = signingConfigs.findByName("release")
+            if (releaseConfig?.storeFile?.exists() == true) {
+                signingConfig = releaseConfig
+            }
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
