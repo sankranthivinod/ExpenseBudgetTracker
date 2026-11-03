@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -47,17 +48,16 @@ class ExpenseViewModel(private val repository: ExpenseRepository) : ViewModel() 
 
     init {
         viewModelScope.launch {
-            allExpenses.collect { list ->
-                if (list.isEmpty()) {
-                    val now = System.currentTimeMillis()
-                    val oneDay = 86400000L
-                    repository.insertExpense(ExpenseEntity(category = "Rent", amount = 1250.00, note = "Monthly Apartment Rent", dateMillis = now - oneDay * 2))
-                    repository.insertExpense(ExpenseEntity(category = "Groceries", amount = 340.50, note = "Supermarket Stockup", dateMillis = now - oneDay * 1))
-                    repository.insertExpense(ExpenseEntity(category = "Insurance", amount = 220.00, note = "Car & Health Insurance", dateMillis = now - oneDay * 3))
-                    repository.insertExpense(ExpenseEntity(category = "Outside Food", amount = 125.75, note = "Weekend Dinner with Family", dateMillis = now - oneDay * 0))
-                    repository.insertExpense(ExpenseEntity(category = "Entertainment", amount = 89.99, note = "Movie Tickets & Concert", dateMillis = now - oneDay * 4))
-                    repository.insertExpense(ExpenseEntity(category = "Utilities", amount = 145.20, note = "Electricity & Internet Bill", dateMillis = now - oneDay * 5))
-                }
+            val currentList = allExpenses.first()
+            if (currentList.isEmpty()) {
+                val now = System.currentTimeMillis()
+                val oneDay = 86400000L
+                repository.insertExpense(ExpenseEntity(category = "Rent", amount = 1250.00, note = "Monthly Apartment Rent", dateMillis = now - oneDay * 2))
+                repository.insertExpense(ExpenseEntity(category = "Groceries", amount = 340.50, note = "Supermarket Stockup", dateMillis = now - oneDay * 1))
+                repository.insertExpense(ExpenseEntity(category = "Insurance", amount = 220.00, note = "Car & Health Insurance", dateMillis = now - oneDay * 3))
+                repository.insertExpense(ExpenseEntity(category = "Outside Food", amount = 125.75, note = "Weekend Dinner with Family", dateMillis = now - oneDay * 0))
+                repository.insertExpense(ExpenseEntity(category = "Entertainment", amount = 89.99, note = "Movie Tickets & Concert", dateMillis = now - oneDay * 4))
+                repository.insertExpense(ExpenseEntity(category = "Utilities", amount = 145.20, note = "Electricity & Internet Bill", dateMillis = now - oneDay * 5))
             }
         }
     }
