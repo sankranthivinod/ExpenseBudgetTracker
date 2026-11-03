@@ -20,8 +20,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:/Users/vinod/keystore/release.keystore")
+            storePassword = "Krishna@963"
+            keyAlias = "vinod963"
+            keyPassword = "Krishna@963"
+        }
+    }
+
     buildTypes {
         release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
